@@ -27,6 +27,13 @@
 
 #include <xenbiggrant-osdep.h>
 
+#define METAPAGE_MAGIC ((uint32_t)0x42494747) //'BIGG'
+#define METAPAGE_API_VERSION 0
+
+// TODO: Poissbly conver to enum?
+#define REF_TYPE_NORMAL   (0)
+#define REF_TYPE_METAREFS (1)
+
 struct xenbiggrant_instance;
 typedef struct xenbiggrant_instance xenbiggrant_instance;
 
@@ -65,5 +72,18 @@ void destroy_biggrant_instance(xenbiggrant_instance *bg);
 void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t size,
     domid_t domid, int writable, uint32_t * metaref);
 
+
+/**
+ * Releases a new buffer of shareable memory, effectively freeing it from
+ * this domain's perspective. The other side will continue to hold on to the
+ * page's backing store until it voluntarily releases it, per usual grant
+ * behavior.
+ *
+ * @param bg The BigGrant instance associated with the given memory.
+ * @param addr The address of the block of memory to be released.
+ * @param size The size of the block to be released, in bytes.
+ *      XXX THIS LAST ARGUMENT MAY NOT STAY XXX
+ */
+void release_shared_buffer(xenbiggrant_instance *bg, void *addr, size_t size);
 
 #endif
