@@ -175,13 +175,13 @@ def _create_metapage_for_grantrefs(refs, refs_are_metarefs):
     Creates a simulated metapage for a collection of grant references.
     """
 
-    # Create our metapage.
-    metapage, metaref = _alloc_shared_page_raw()
-
-    # Initialize it...
-    metapage["magic"] = METAPAGE_MAGIC
-
     if len(refs) <= REFS_PER_METAPAGE:
+
+        # Create our metapage.
+        metapage, metaref = _alloc_shared_page_raw()
+
+        # Initialize it...
+        metapage["magic"] = METAPAGE_MAGIC
 
         # Base case: our references fit in a single metapage.
         metapage["refs_are_metarefs"] = refs_are_metarefs
@@ -199,10 +199,11 @@ def _create_metapage_for_grantrefs(refs, refs_are_metarefs):
             sub_metaref = _create_metapage_for_grantrefs(refs[i:i + REFS_PER_METAPAGE], refs_are_metarefs)
             sub_metarefs.append(sub_metaref)
 
-        metapage["refs_are_metarefs"] = True
-        metapage["refs"] = sub_metarefs
+        return _create_metapage_for_grantrefs(sub_metarefs, True)
+
 
     # Return the grant reference for the metapage.
+    assert len(metapage["refs"]) <= REFS_PER_METAPAGE
     return metaref
 
 
@@ -230,6 +231,8 @@ def _get_grantrefs_in_metapage(metaref):
         # Inductive case: we have metarefs. We'll map each of those in.
         sub_metarefs = metapage["refs"]
         refs = []
+
+        assert len(metapage["refs"]) <= REFS_PER_METAPAGE
 
         # Parse each of the metapages.
         for sub_metaref in sub_metarefs:
