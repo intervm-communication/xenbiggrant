@@ -121,13 +121,15 @@ static int create_metapage_for_grantrefs(uint32_t *refs,
     return -ENOSYS;
 }
 
-void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t count,
+void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t size,
     domid_t domid, int writable, uint32_t * metaref) {
 
     void *mapping;
     uint32_t *refs;
-    uint32_t metapage;
     int rc;
+
+    int actual_size = (size + (PAGE_SIZE - 1));
+    int num_pages = actual_size >> PAGE_SHIFT;
 
     if(!bg && !metaref) {
         log_error(bg, EINVAL, "Received a null required argument!\n");
@@ -138,7 +140,7 @@ void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t count,
      * Allocate a temporary array to store the grant references for the
      * shared buffer.
      */
-    refs = malloc(sizeof(uint32_t) * count);
+    refs = malloc(sizeof(uint32_t) * num_pages);
     if(!refs) {
         log_error(bg, ENOMEM, "Could not allocate a buffer for outgoing grant references!");
         return NULL;
@@ -148,7 +150,7 @@ void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t count,
      * And create the actual share, receiving each of the relevant grant
      * references.
      */
-    mapping = xengntshr_share_pages(bg->xgs, domid, count, refs, writable);
+    mapping = xengntshr_share_pages(bg->xgs, domid, num_pages, refs, writable);
     if(!mapping) {
         log_error(bg, errno, "Could not allocate a buffer for outgoing grant references!");
         goto cleanup;
@@ -169,7 +171,9 @@ void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t count,
 
 cleanup:
     if(mapping)
-        xengntshr_unshare(bg->xgs, mapping, count);
+        xengntshr_unshare(bg->xgs, mapping, num_pages);
     if(refs)
         free(refs);
+
+    return NULL;
 }

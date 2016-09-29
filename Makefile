@@ -27,9 +27,14 @@ all: build
 .PHONY: build
 build:
 	$(MAKE) libs
+	$(MAKE) user_biggrantout
 
 .PHONY: libs
 libs: headers.chk $(LIB)
+
+# XXX temporary XXX
+user_biggrantout: tests/user_biggrantout.c libxenbiggrant.so
+	LIBRARY_PATH=$(shell pwd) $(CC) $< $(CFLAGS) -Wl,-rpath=$(shell pwd) -lxengnttab -lxenbiggrant -lxentoollog -o user_biggrantout -o $@
 
 headers.chk: $(wildcard include/*.h)
 

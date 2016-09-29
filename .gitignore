@@ -10,3 +10,6 @@ Module.symvers
 *.mod
 modules.order
 *.a
+libxenbiggrant.so.*
+libxenbiggrant.so
+user_biggrantout

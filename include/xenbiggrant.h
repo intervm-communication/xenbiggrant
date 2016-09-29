@@ -62,7 +62,7 @@ void destroy_biggrant_instance(xenbiggrant_instance *bg);
  * @return A pointer to the shared memory buffer, or NULL if no buffer could
  *    be allocated.
  */
-void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t count,
+void *allocate_shared_buffer(xenbiggrant_instance *bg, size_t size,
     domid_t domid, int writable, uint32_t * metaref);
 
 
